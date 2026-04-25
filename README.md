@@ -14,7 +14,61 @@
 
 ## 实验流程记录
 
-### 1. 独立 val40 阈值搜索
+### 1. 训练
+
+本次实验对应的训练目录是：
+
+- `run/20260422_201016_COnP/`
+
+训练命令：
+
+```bash
+cd /mnt/ssd/lian/给claudecode/v10_baseline_conpoff
+CUDA_VISIBLE_DEVICES=1 python3 train_conp_v6_0415.py --config config.yaml
+```
+
+训练配置要点：
+
+- train: `1-400`
+- val: `361-400`
+- test: `401-500`
+- batch size: `16`
+- learning rate: `3e-4`
+- max samples per epoch: `4000`
+- hop length: `800`
+- CQT: `288 bins`
+
+训练日志：
+
+- `run/20260422_201016_COnP/logs/train_stdout.log`
+
+### 2. 训练内验证与外部 test 监控
+
+训练脚本内部会做两件事：
+
+1. 在 `val40` 上做训练内验证与阈值搜索
+2. 在 `test100` 上做外部监控，记录到 `test_monitor.txt`
+
+其中：
+
+- 训练内 best model 保存标准是 `val COnP`
+- `test_monitor.txt` 只作为训练结束后的外部观察记录，本身不参与训练时反向传播或阈值搜索
+
+外部监控文件：
+
+- `run/20260422_201016_COnP/test_monitor.txt`
+
+在这份监控里：
+
+- `COnP` 最高出现在 `epoch 128`
+- `COn` 最高也出现在 `epoch 128`
+- `COnPOff` 最高出现在 `epoch 200`
+
+本次后续独立评估实验选择的是：
+
+- `run/20260422_201016_COnP/checkpoints/best_model_epoch0128_COnP0.7958.pt`
+
+### 3. 独立 val40 阈值搜索
 
 第一阶段代码：
 
@@ -38,6 +92,8 @@ python3 评估/search_threshold_v2.py \
 - `test COnP=0.777067`
 - `test COnPOff=0.482631`
 
+### 4. 独立 val40 offset 阈值搜索
+
 第二阶段代码：
 
 - `评估/search_offset_threshold_and_predict.py`
@@ -59,7 +115,16 @@ python3 评估/search_offset_threshold_and_predict.py \
 - `test COnP=0.776425`
 - `test COnPOff=0.592620`
 
-### 2. 结果文件
+### 5. 最终 test 推理与结果文件
+
+最终结果来自：
+
+1. 先训练得到 `epoch128` checkpoint
+2. 再在 `val40` 上独立搜索 `onset/frame`
+3. 再在 `val40` 上独立搜索 `offset`
+4. 最后用选出的三阈值在 `MIR-ST500 test set` 上推理一次
+
+结果文件：
 
 - `run/20260422_201016_COnP/threshold_search_v2_epoch0128/val_threshold_search.tsv`
 - `run/20260422_201016_COnP/threshold_search_v2_epoch0128/selected_thresholds.tsv`
