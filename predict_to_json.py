@@ -1,5 +1,5 @@
 """
-CFT_v6 推理脚本：将模型预测结果输出为 JSON 文件
+CFT_v6 两阈值 baseline 推理脚本：将模型预测结果输出为 JSON 文件
 输出格式与原论文 evaluate_github.py 完全兼容：
   {"401": [[onset_sec, offset_sec, midi_pitch], ...], "402": [...], ...}
 
@@ -12,7 +12,6 @@ CFT_v6 推理脚本：将模型预测结果输出为 JSON 文件
       --split test \
       --onset_thresh 0.50 \
       --frame_thresh 0.40 \
-      --offset_thresh 0.30 \
       --output pred_test_v10_best.json
 
 评估（直接调用原论文脚本）：
@@ -73,6 +72,9 @@ def frames_to_notes(frame_pred, onset_pred, hop_length, sample_rate,
                     offset_pred=None, offset_thresh=0.5, max_gap=2):
     """
     帧级概率图 -> 音符列表 [[onset_sec, offset_sec, midi_pitch], ...]
+
+    baseline 解码主流程使用 onset/frame 两个阈值。
+    如果显式传入 offset_pred，则允许 offset 峰值辅助终点修正。
 
     onset 分支：onset 触发音符起点，offset 峰值优先确定终点，frame 概率兜底
     无 onset 分支：纯帧级连续区间追踪
@@ -207,8 +209,6 @@ def main():
                         help='onset 阈值（当前 best_model.pt 记录的最优值 0.50）')
     parser.add_argument('--frame_thresh', type=float, default=0.40,
                         help='frame 阈值（当前 best_model.pt 记录的最优值 0.40）')
-    parser.add_argument('--offset_thresh', type=float, default=0.30,
-                        help='offset 阈值（offset-aware 解码使用）')
     parser.add_argument('--output',       type=str, default='pred_test_v10_best.json',
                         help='输出 JSON 路径')
     args = parser.parse_args()
@@ -238,8 +238,7 @@ def main():
     sample_rate = config['data']['sample_rate']
 
     log.info(f'Split={args.split}, 共 {len(song_ids)} 首')
-    log.info(f'onset_thresh={args.onset_thresh}, frame_thresh={args.frame_thresh}, '
-             f'offset_thresh={args.offset_thresh}')
+    log.info(f'onset_thresh={args.onset_thresh}, frame_thresh={args.frame_thresh}')
     log.info('=' * 60)
 
     predictions = {}   # {song_id: [[onset, offset, midi], ...]}
@@ -260,9 +259,7 @@ def main():
         notes = frames_to_notes(
             frame_pred, onset_pred, hop_length, sample_rate,
             onset_thresh=args.onset_thresh,
-            frame_thresh=args.frame_thresh,
-            offset_pred=offset_pred,
-            offset_thresh=args.offset_thresh)
+            frame_thresh=args.frame_thresh)
 
         predictions[song_id] = notes
 

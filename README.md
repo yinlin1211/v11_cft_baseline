@@ -52,7 +52,7 @@ CUDA_VISIBLE_DEVICES=1 python3 train_conp_v6_0415.py --config config.yaml
 其中：
 
 - 训练内 best model 保存标准是 `val COnP`
-- `test_monitor.txt` 只作为训练结束后的外部观察记录，本身不参与训练时反向传播或阈值搜索
+- `test_monitor.txt` 只作为外部观察记录，用来查看是否已经过拟合、从而结束训练；本身不参与训练时反向传播或 `val` 阈值搜索
 
 外部监控文件：
 
@@ -88,9 +88,6 @@ python3 评估/search_threshold_v2.py \
 - `val COn=0.817416`
 - `val COnP=0.802107`
 - `val COnPOff=0.529928`
-- `test COn=0.804001`
-- `test COnP=0.777067`
-- `test COnPOff=0.482631`
 
 ### 4. 独立 val40 offset 阈值搜索
 
@@ -128,7 +125,6 @@ python3 评估/search_offset_threshold_and_predict.py \
 
 - `run/20260422_201016_COnP/threshold_search_v2_epoch0128/val_threshold_search.tsv`
 - `run/20260422_201016_COnP/threshold_search_v2_epoch0128/selected_thresholds.tsv`
-- `run/20260422_201016_COnP/threshold_search_v2_epoch0128/test_with_selected_thresholds.tsv`
 - `run/20260422_201016_COnP/offset_search_epoch0128_best_val_conp/val_offset_threshold_search.tsv`
 - `run/20260422_201016_COnP/offset_search_epoch0128_best_val_conp/selected_offset_threshold.tsv`
 - `run/20260422_201016_COnP/offset_search_epoch0128_best_val_conp/test_with_selected_offset_threshold.tsv`
@@ -153,8 +149,8 @@ python3 评估/search_offset_threshold_and_predict.py \
 ## 代码位置
 
 - `train_conp_v6_0415.py`：训练脚本，包含训练内阈值搜索与 test monitor
-- `predict_to_json.py`：baseline 推理
-- `predict_to_json_offset.py`：offset-aware 推理
+- `predict_to_json.py`：两阈值 baseline 推理（`onset/frame`）
+- `predict_to_json_offset.py`：三阈值 offset-aware 推理（`onset/frame/offset`）
 - `评估/search_threshold_v2.py`：独立 `val40` 搜 `onset/frame`
 - `评估/search_offset_threshold_and_predict.py`：固定 `onset/frame` 后独立 `val40` 搜 `offset`
 - `evaluate_github.py`：原论文兼容评测脚本
