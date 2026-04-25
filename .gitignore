@@ -31,5 +31,8 @@ run/20260422_201016_COnP/*
 !run/20260422_201016_COnP/logs/
 run/20260422_201016_COnP/logs/*
 !run/20260422_201016_COnP/logs/train_stdout.log
+!run/20260422_201016_COnP/logs/tensorboard/
+run/20260422_201016_COnP/logs/tensorboard/*
+!run/20260422_201016_COnP/logs/tensorboard/events.out.tfevents.1776859819.z.3967419.0
 
 *.pdf
