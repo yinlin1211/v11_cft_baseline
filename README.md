@@ -60,6 +60,13 @@ CUDA_VISIBLE_DEVICES=1 python3 train_conp_v6_0415.py --config config.yaml
 
 `test_monitor.txt` 主要用于观察训练是否已经进入平台期，而不是直接作为后处理阈值搜索的依据。后处理阈值的确定仍然完全在 `val40` 上完成。基于平台期内的候选 checkpoint，我们进一步选取了 `epoch128` 和 `epoch233` 两个模型，用来验证模型是否已经到顶。其中本 README 后面完整展示的是 `epoch128` 这一组实验流程。
 
+这两个平台期 checkpoint 在完成“两轮 `val40` 阈值搜索”后的最终 test 结果如下：
+
+| checkpoint | onset | frame | offset | COn | COnP | COnPOff |
+|------------|------:|------:|-------:|----:|-----:|--------:|
+| epoch128 | 0.45 | 0.50 | 0.10 | 0.803172 | 0.776425 | 0.592620 |
+| epoch233 | 0.45 | 0.55 | 0.30 | 0.798849 | 0.771539 | 0.585094 |
+
 本 README 当前主结果对应的 checkpoint 是：
 
 - `run/20260422_201016_COnP/checkpoints/best_model_epoch0128_COnP0.7958.pt`
